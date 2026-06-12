@@ -1,0 +1,7 @@
+{
+  "name": "caramel-cloud",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0",
+    "bcryptjs": "^2.4.3"
+  }
+}
