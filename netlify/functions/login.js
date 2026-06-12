@@ -1,23 +1,36 @@
-import { getStore } from "@netlify/blobs";
-import bcrypt from "bcryptjs";
+const { getStore } = require('@netlify/blobs');
 
-export default async (req) => {
-  if (req.method!== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const { pin } = await req.json();
-  const store = getStore("caramel-admin");
-  const hash = await store.get("password-hash");
+  try {
+    const { password } = JSON.parse(event.body);
+    const store = getStore('caramel-auth');
+    
+    // Get stored password, default to "1234" if not set
+    let storedPass = await store.get('admin_password');
+    if (!storedPass) {
+      storedPass = '1234';
+      await store.set('admin_password', storedPass);
+    }
 
-  // First run: set default password 1234
-  if (!hash) {
-    const defaultHash = await bcrypt.hash("1234", 10);
-    await store.set("password-hash", defaultHash);
-    return Response.json({ success: pin === "1234" });
+    if (password === storedPass) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ success: true })
+      };
+    } else {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: 'Invalid password' })
+      };
+    }
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
   }
-
-  const valid = await bcrypt.compare(pin, hash);
-  return Response.json({ success: valid });
-}
-
+};
