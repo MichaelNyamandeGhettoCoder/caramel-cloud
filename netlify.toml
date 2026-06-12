@@ -5,3 +5,5 @@
   from = "/admin"
   to = "/admin.html"
   status = 200
+[functions]
+  node_bundler = "esbuild"
