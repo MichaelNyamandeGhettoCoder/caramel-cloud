@@ -51,20 +51,6 @@
   </style>
 </head>
 <body>
-<script>
-
-// 1. Gate: check login on page load
-if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
-  window.location.href = '/login.html'; // change to your login page name
-}
-
-// 2. Auto-lock: nuke session when they leave
-const lockAdmin = () => sessionStorage.removeItem('adminLoggedIn');
-window.addEventListener('pagehide', lockAdmin);
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') lockAdmin();
-});
-</script>
   <div class="container">
     <h1>Caramel Cloud Admin <button class="logout" onclick="logout()" title="Logout">↪</button></h1>
     <div class="tabs">
