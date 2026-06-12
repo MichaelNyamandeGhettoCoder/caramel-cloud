@@ -18,7 +18,6 @@ exports.handler = async (event) => {
 console.log('Raw from Blobs:', JSON.stringify(storedPass));
 console.log('Comparing:', JSON.stringify(password), 'vs', JSON.stringify(storedPass));
 
-if (password === storedPass) {
 
     if (password === storedPass) {
       return {
