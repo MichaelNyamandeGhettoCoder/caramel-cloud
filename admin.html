@@ -4,344 +4,426 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caramel Cloud Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
-      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fdf2f8;
+      color: #1f2937;
+      padding: 20px;
     }
-    input[type="file"]::file-selector-button {
-      background: #d63384; color: white; border: 0; padding: 10px 20px;
-      border-radius: 8px; margin-right: 16px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s; box-shadow: 0 2px 4px rgba(214, 51, 132, 0.3);
+   .container { max-width: 600px; margin: 0 auto; }
+    h1 { 
+      color: #be185d; 
+      font-size: 28px; 
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    input[type="file"]::file-selector-button:hover {
-      background: #b02a5b; transform: translateY(-1px);
+   .logout {
+      margin-left: auto;
+      background: #f3f4f6;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
     }
- .tab-btn {
-        padding: 12px 24px; border-bottom: 3px solid transparent;
-        font-weight: 600; color: #6b7280; cursor: pointer; transition: 0.2s;
+   .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 20px 0;
+      border-bottom: 2px solid #fbcfe8;
     }
- .tab-btn.active { color: #d63384; border-bottom-color: #d63384; }
+   .tab {
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-weight: 600;
+      color: #6b7280;
+      font-size: 15px;
+    }
+   .tab.active {
+      color: #be185d;
+      border-bottom-color: #ec4899;
+    }
+   .tab-content { display: none; }
+   .tab-content.active { display: block; }
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 15px 0 5px;
+      font-size: 14px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #fbcfe8;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #ec4899;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+   .product-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 2px solid #fbcfe8;
+    }
+   .product-card img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+   .product-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+   .product-info { flex: 1; }
+   .product-name { font-weight: 700; color: #1f2937; }
+   .product-price { color: #be185d; font-weight: 600; }
+   .product-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+   .btn-small {
+      flex: 1;
+      padding: 8px;
+      font-size: 14px;
+      margin: 0;
+    }
+   .btn-edit { background: #3b82f6; }
+   .btn-delete { background: #ef4444; }
+    #upload-status, #pass-msg {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+   .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid #fbcfe8;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
-<body class="p-4">
-  <!-- LOGIN SCREEN -->
-  <div id="login" class="w-full max-w-md mx-auto mt-20">
-    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <div class="text-center mb-8">
-        <div class="text-5xl mb-4">🔒</div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Login</h1>
-        <p class="text-sm text-gray-500">Enter PIN to manage catalogue</p>
+<body>
+  <div class="container">
+    <h1>
+      Caramel Cloud Admin
+      <button class="logout" onclick="logout()" title="Logout">↪</button>
+    </h1>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('add')">Add Product</button>
+      <button class="tab" onclick="switchTab('list')">Catalogue</button>
+      <button class="tab" onclick="switchTab('settings')">Settings</button>
+    </div>
+
+    <!-- ADD PRODUCT TAB -->
+    <div id="add" class="tab-content active">
+      <input type="hidden" id="editIndex">
+      <label>Product Name</label>
+      <input type="text" id="pname" placeholder="e.g., Vanilla Cake">
+      
+      <label>Price ($)</label>
+      <input type="number" id="pprice" placeholder="0.00" step="0.01">
+      
+      <label>Category</label>
+      <select id="pcategory">
+        <option value="">Select category</option>
+        <option>🎂 Cakes</option>
+        <option>🧁 Cupcakes</option>
+        <option>🍪 Cookies</option>
+        <option>🍰 Pastries</option>
+        <option>🎁 Gift Boxes</option>
+      </select>
+      
+      <label>Product Photos</label>
+      <input type="file" id="pimages" multiple accept="image/*">
+      <div style="font-size:13px;color:#6b7280;margin-top:5px">
+        Select multiple images. First = main. Leave empty when editing to keep old images.
       </div>
-      <div class="space-y-6">
-        <input type="password" id="pin" placeholder="Enter PIN"
-               class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#d63384] focus:ring-4 focus:ring-pink-100 outline-none transition">
-        <button onclick="checkPin()"
-                class="w-full bg-gradient-to-r from-[#d63384] to-[#b02a5b] hover:from-[#b02a5b] hover:to-[#961f47] text-white py-3 rounded-xl font-semibold transition transform hover:scale-105 shadow-lg">
-          🔓 Unlock Admin
-        </button>
+      
+      <button id="save-btn" onclick="saveProduct()">✨ Save Product</button>
+      <div id="upload-status"></div>
+    </div>
+
+    <!-- CATALOGUE TAB -->
+    <div id="list" class="tab-content">
+      <div id="product-list"></div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="settings" class="tab-content">
+      <div class="card">
+        <h3 style="margin-bottom:15px;color:#be185d">ImgBB API Key</h3>
+        <div style="font-size:14px;color:#6b7280;margin-bottom:10px">
+          Key is hardcoded. Current: 77d798c6f2d4eae9e31b26fefe4f4ceb
+        </div>
+        <input type="password" id="imgbbKey" placeholder="Enter new key to override">
+        <button onclick="saveImgbbKey()">Save New API Key</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:15px;color:#be185d">Change Admin Password</h3>
+        <input type="password" id="newPass" placeholder="New password - min 4 characters">
+        <button onclick="changePassword()">Update Password</button>
+        <div id="pass-msg"></div>
       </div>
     </div>
-  </div>
 
-  <!-- ADMIN PANEL -->
-  <div id="panel" class="w-full max-w-5xl mx-auto hidden">
-    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <div class="flex justify-between items-center mb-6">
-        </div>
-<div>
-          <h1 class="text-3xl font-bold text-gray-800 mb-2">Caramel Cloud Admin</h1>
-        </div>
-        <button onclick="logout()" class="text-gray-400 hover:text-gray-600 transition" title="Logout">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-          </svg>
-        </button>
-      </div>
-
-
-      <!-- TABS -->
-      <div class="flex border-b mb-6">
-        <div class="tab-btn active" onclick="showTab('add')">Add Product</div>
-        <div class="tab-btn" onclick="showTab('list')">Catalogue</div>
-      </div>
-
-      <!-- ADD/EDIT TAB -->
-      <div id="tab-add">
-        <div class="space-y-6">
-          <input type="hidden" id="editIndex" value="">
-
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Product Name</label>
-            <input type="text" id="pname" required placeholder="e.g., Vanilla Cake"
-                   class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#d63384] focus:ring-4 focus:ring-pink-100 outline-none transition">
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Price ($)</label>
-            <input type="number" id="pprice" step="0.01" required placeholder="0.00"
-                   class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#d63384] focus:ring-4 focus:ring-pink-100 outline-none transition">
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
-            <select id="pcategory" required
-                    class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#d63384] focus:ring-4 focus:ring-pink-100 outline-none transition">
-              <option value="Cakes">🎂 Cakes</option>
-              <option value="Cosmetics">💄 Cosmetics</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Product Photos</label>
-            <input type="file" id="pimage"required  multiple accept="image/*"
-                   class="block w-full text-sm border-2 border-gray-200 rounded-xl p-2 focus:border-[#d63384] focus:ring-4 focus:ring-pink-100 outline-none transition">
-            <p class="text-xs text-gray-500 mt-2">Select multiple images. First = main. Leave empty when editing to keep old images.</p>
-          </div>
-
-          <div id="previewGrid" class="grid grid-cols-3 md:grid-cols-5 gap-3"></div>
-
-          <div class="flex gap-3">
-            <button onclick="saveProduct()" id="save-btn"
-                    class="flex-1 bg-gradient-to-r from-[#d63384] to-[#b02a5b] hover:from-[#b02a5b] hover:to-[#961f47] text-white py-3 rounded-xl font-semibold transition transform hover:scale-105 shadow-lg">
-              ✨ Save Product
-            </button>
-            <button onclick="cancelEdit()" id="cancel-btn"
-                    class="px-6 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold transition hidden">
-              Cancel
-            </button>
-          </div>
-          <p id="upload-status" class="text-sm text-center text-gray-600"></p>
-        </div>
-      </div>
-
-      <!-- PRODUCT LIST TAB -->
-      <div id="tab-list" class="hidden">
-        <div id="productList" class="space-y-3"></div>
-      </div>
-    </div>
   </div>
 
 <script>
-    // CONFIG - REPLACE THESE
-    const ADMIN_PIN = "1234"; // Change this
-    const IMGBB_API_KEY = "77d798c6f2d4eae9e31b26fefe4f4ceb"; // Get from https://api.imgbb.com/
-    const WHATSAPP_NUMBER = "263717236434"; // Your real number
+// ===== CONFIG =====
+const IMGBB_API_KEY = "77d798c6f2d4eae9e31b26fefe4f4ceb";
+const PRODUCTS_KEY = 'caramel_products';
+let products = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+let currentFiles = [];
 
-    let products = JSON.parse(localStorage.getItem('caramel_products') || '[]');
-    let currentFiles = [];
+// ===== AUTH CHECK =====
+if (sessionStorage.getItem('caramel_auth')!== 'true') {
+  window.location.href = '/login.html';
+}
 
-    // CHECK HTTPS - ImgBB requirement
-    if (location.protocol!== 'https:' && location.hostname!== 'localhost') {
-        document.getElementById('https-warning').classList.remove('hidden');
-    }
+function logout() {
+  sessionStorage.removeItem('caramel_auth');
+  window.location.href = '/login.html';
+}
 
-    // LOGIN
-    function checkPin() {
-        if (document.getElementById('pin').value === ADMIN_PIN) {
-            document.getElementById('login').classList.add('hidden');
-            document.getElementById('panel').classList.remove('hidden');
-            sessionStorage.setItem('caramel_admin_logged_in', 'true');
-            loadProducts();
-        } else {
-            alert('Wrong PIN');
-        }
-    }
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+  if (tab === 'list') renderProducts();
+}
 
-    function logout() {
-        sessionStorage.removeItem('caramel_admin_logged_in');
-        location.reload();
-    }
+// ===== IMAGE PREVIEW =====
+document.getElementById('pimages').onchange = (e) => {
+  currentFiles = Array.from(e.target.files);
+};
 
-    if (sessionStorage.getItem('caramel_admin_logged_in') === 'true') {
-        document.getElementById('login').classList.add('hidden');
-        document.getElementById('panel').classList.remove('hidden');
-        loadProducts();
-    }
+// ===== SAVE PRODUCT - WITH IMGBB UPLOAD =====
+async function saveProduct() {
+  const editIndex = document.getElementById('editIndex').value;
+  const name = document.getElementById('pname').value.trim();
+  const price = parseFloat(document.getElementById('pprice').value);
+  const category = document.getElementById('pcategory').value;
+  const statusEl = document.getElementById('upload-status');
+  const saveBtn = document.getElementById('save-btn');
 
-    // TABS
-    function showTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-add').classList.add('hidden');
-        document.getElementById('tab-list').classList.add('hidden');
+  if (!name ||!price ||!category) {
+    alert('All fields required');
+    return;
+  }
 
-        if (tab === 'add') {
-            document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-            document.getElementById('tab-add').classList.remove('hidden');
-        } else {
-            document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-            document.getElementById('tab-list').classList.remove('hidden');
-            loadProducts();
-        }
-    }
+  const isEditing = editIndex!== '';
+  const hasNewImages = currentFiles.length > 0;
 
-    // IMAGE PREVIEW
-    document.getElementById('pimage').addEventListener('change', function(e) {
-        currentFiles = Array.from(e.target.files);
-        const previewGrid = document.getElementById('previewGrid');
-        previewGrid.innerHTML = '';
+  if (!isEditing &&!hasNewImages) {
+    alert('Add at least 1 product image');
+    return;
+  }
 
-        currentFiles.forEach((file, i) => {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const div = document.createElement('div');
-                div.className = 'relative';
-                div.innerHTML = `
-                    <img src="${event.target.result}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200">
-                    ${i === 0? '<div class="absolute top-1 left-1 bg-[#d63384] text-white text-xs px-2 py-1 rounded">Main</div>' : ''}
-                `;
-                previewGrid.appendChild(div);
-            };
-            reader.readAsDataURL(file);
+  saveBtn.disabled = true;
+  statusEl.innerText = 'Uploading images...';
+  statusEl.style.color = '#3b82f6';
+
+  try {
+    let imageUrls = [];
+
+    if (isEditing &&!hasNewImages) {
+      imageUrls = products[parseInt(editIndex)].images;
+    } else {
+      for (let i = 0; i < currentFiles.length; i++) {
+        const file = currentFiles[i];
+        statusEl.innerText = `Uploading image ${i+1}/${currentFiles.length}...`;
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('key', IMGBB_API_KEY);
+
+        const res = await fetch('https://api.imgbb.com/1/upload', {
+          method: 'POST',
+          body: formData
         });
+        
+        const data = await res.json();
+        if (!data.success) throw new Error('ImgBB upload failed');
+        imageUrls.push(data.data.url);
+      }
+    }
+
+    const product = {
+      name, price, category,
+      images: imageUrls,
+      created: isEditing? products[parseInt(editIndex)].created : Date.now()
+    };
+
+    if (isEditing) {
+      products[parseInt(editIndex)] = product;
+      statusEl.innerText = 'Product updated!';
+    } else {
+      products.unshift(product);
+      statusEl.innerText = 'Product added!';
+    }
+
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    
+    // Reset form
+    document.getElementById('pname').value = '';
+    document.getElementById('pprice').value = '';
+    document.getElementById('pcategory').value = '';
+    document.getElementById('pimages').value = '';
+    document.getElementById('editIndex').value = '';
+    currentFiles = [];
+    saveBtn.innerText = '✨ Save Product';
+    
+    setTimeout(() => {
+      statusEl.innerText = '';
+      switchTab('list');
+      document.querySelectorAll('.tab')[1].click();
+    }, 1000);
+
+  } catch (err) {
+    statusEl.innerText = 'Error: ' + err.message;
+    statusEl.style.color = '#ef4444';
+  } finally {
+    saveBtn.disabled = false;
+  }
+}
+
+// ===== RENDER PRODUCTS =====
+function renderProducts() {
+  const list = document.getElementById('product-list');
+  if (products.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280">No products yet. Add one!</div>';
+    return;
+  }
+
+  list.innerHTML = products.map((p, i) => `
+    <div class="product-card">
+      <div class="product-header">
+        <img src="${p.images[0]}" alt="${p.name}">
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">$${p.price.toFixed(2)}</div>
+          <div style="font-size:13px;color:#6b7280">${p.category}</div>
+        </div>
+      </div>
+      <div class="product-actions">
+        <button class="btn-small btn-edit" onclick="editProduct(${i})">Edit</button>
+        <button class="btn-small btn-delete" onclick="deleteProduct(${i})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== EDIT PRODUCT =====
+function editProduct(i) {
+  const p = products[i];
+  document.getElementById('editIndex').value = i;
+  document.getElementById('pname').value = p.name;
+  document.getElementById('pprice').value = p.price;
+  document.getElementById('pcategory').value = p.category;
+  document.getElementById('save-btn').innerText = '💾 Update Product';
+  switchTab('add');
+  document.querySelectorAll('.tab')[0].click();
+  window.scrollTo(0, 0);
+}
+
+// ===== DELETE PRODUCT =====
+function deleteProduct(i) {
+  if (confirm(`Delete ${products[i].name}?`)) {
+    products.splice(i, 1);
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    renderProducts();
+  }
+}
+
+// ===== SETTINGS: IMGBB KEY OVERRIDE =====
+function saveImgbbKey() {
+  const key = document.getElementById('imgbbKey').value.trim();
+  if (key.length < 10) {
+    alert('Invalid key');
+    return;
+  }
+  localStorage.setItem('imgbb_key_override', key);
+  alert('API Key saved! Refresh page to use new key.');
+  document.getElementById('imgbbKey').value = '';
+}
+
+function getActiveImgbbKey() {
+  return localStorage.getItem('imgbb_key_override') || IMGBB_API_KEY;
+}
+
+// ===== SETTINGS: CHANGE PASSWORD =====
+async function changePassword() {
+  const newPass = document.getElementById('newPass').value;
+  const msg = document.getElementById('pass-msg');
+  
+  if (newPass.length < 4) {
+    msg.innerText = 'Password must be at least 4 characters';
+    msg.style.color = '#ef4444';
+    return;
+  }
+  
+  msg.innerText = 'Updating...';
+  msg.style.color = '#3b82f6';
+  
+  try {
+    const res = await fetch('/.netlify/functions/change-password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ newPassword: newPass })
     });
-
-    // SAVE PRODUCT - WITH IMGBB UPLOAD
-    async function saveProduct() {
-        const editIndex = document.getElementById('editIndex').value;
-        const name = document.getElementById('pname').value.trim();
-        const price = parseFloat(document.getElementById('pprice').value);
-        const category = document.getElementById('pcategory').value;
-
-        if (!name ||!price ||!category) return alert('All fields required');
-
-        const isEditing = editIndex!== '';
-        const hasNewImages = currentFiles.length > 0;
-
-        if (!isEditing &&!hasNewImages) return alert('Add at least one image');
-        if (IMGBB_API_KEY === "77d798c6f2d4eae9e31b26fefe4f4ceb") return alert('Set your ImgBB API key first');
-
-        document.getElementById('save-btn').disabled = true;
-        document.getElementById('upload-status').innerText = 'Uploading images to ImgBB...';
-
-        try {
-            let imageUrls = [];
-
-            // If editing and no new images, keep old ones
-            if (isEditing &&!hasNewImages) {
-                imageUrls = products[parseInt(editIndex)].images || [products[parseInt(editIndex)].image];
-            } else {
-                // Upload new images to ImgBB
-                for (let i = 0; i < currentFiles.length; i++) {
-                    document.getElementById('upload-status').innerText = `Uploading image ${i+1}/${currentFiles.length}...`;
-
-                    const formData = new FormData();
-                    formData.append('image', currentFiles[i]);
-
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await res.json();
-
-                    if (!data.success) throw new Error(data.error?.message || 'Upload failed');
-                    imageUrls.push(data.data.url);
-                }
-            }
-
-            const product = { name, price, category, images: imageUrls, image: imageUrls[0] };
-
-            if (isEditing) {
-                products[parseInt(editIndex)] = product;
-                document.getElementById('upload-status').innerText = 'Product updated!';
-            } else {
-                products.push(product);
-                document.getElementById('upload-status').innerText = 'Product added!';
-            }
-
-            localStorage.setItem('caramel_products', JSON.stringify(products));
-            resetForm();
-            loadProducts();
-
-        } catch (err) {
-            document.getElementById('upload-status').innerText = `Upload failed: ${err.message}. Check HTTPS + API key.`;
-            console.error(err);
-        } finally {
-            document.getElementById('save-btn').disabled = false;
-        }
+    
+    if (res.ok) {
+      msg.innerText = 'Password changed! Use this on your next login.';
+      msg.style.color = '#10b981';
+      document.getElementById('newPass').value = '';
+    } else {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed');
     }
+  } catch (err) {
+    msg.innerText = 'Error: ' + err.message;
+    msg.style.color = '#ef4444';
+  }
+}
 
-    function editProduct(index) {
-        const p = products[index];
-        document.getElementById('editIndex').value = index;
-        document.getElementById('pname').value = p.name;
-        document.getElementById('pprice').value = p.price;
-        document.getElementById('pcategory').value = p.category;
-
-        const images = p.images || [p.image];
-        currentFiles = [];
-        document.getElementById('previewGrid').innerHTML = images.map((img, i) => `
-            <div class="relative">
-                <img src="${img}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200">
-                ${i === 0? '<div class="absolute top-1 left-1 bg-[#d63384] text-white text-xs px-2 py-1 rounded">Main</div>' : ''}
-            </div>
-        `).join('');
-
-        document.getElementById('save-btn').innerHTML = '💾 Update Product';
-        document.getElementById('cancel-btn').classList.remove('hidden');
-        showTab('add');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function deleteProduct(index) {
-        if (confirm(`Delete "${products[index].name}"? This cannot be undone.`)) {
-            products.splice(index, 1);
-            localStorage.setItem('caramel_products', JSON.stringify(products));
-            loadProducts();
-        }
-    }
-
-    function cancelEdit() {
-        resetForm();
-    }
-
-    function resetForm() {
-        document.getElementById('pname').value = '';
-        document.getElementById('pprice').value = '';
-        document.getElementById('pimage').value = '';
-        document.getElementById('editIndex').value = '';
-        document.getElementById('previewGrid').innerHTML = '';
-        document.getElementById('upload-status').innerText = '';
-        document.getElementById('save-btn').innerHTML = '✨ Save Product';
-        document.getElementById('cancel-btn').classList.add('hidden');
-        currentFiles = [];
-    }
-
-    function loadProducts() {
-        const list = document.getElementById('productList');
-        if (products.length === 0) {
-            list.innerHTML = '<div class="text-center py-12 text-gray-400">No products yet. Add one in the first tab.</div>';
-            return;
-        }
-
-        list.innerHTML = products.map((p, i) => `
-            <div class="flex gap-3 items-center p-4 bg-white rounded-xl border border-gray-100 hover:border-pink-200 hover:shadow-md transition-all duration-200">
-                <img src="${p.images? p.images[0] : p.image}" class="w-16 h-16 object-cover rounded-lg shadow-sm">
-                <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-gray-800 truncate">${p.name}</div>
-                    <div class="text-sm text-gray-500 mt-0.5">${p.category} • $${p.price}</div>
-                    <div class="text-xs text-gray-400 mt-0.5">${p.images? p.images.length : 1} photo${p.images && p.images.length > 1? 's' : ''}</div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="editProduct(${i})" class="p-2.5 text-gray-500 hover:text-[#d63384] hover:bg-pink-50 rounded-lg transition" title="Edit">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                    </button>
-                    <button onclick="deleteProduct(${i})" class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Delete">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    loadProducts();
+// Init
+renderProducts();
 </script>
 </body>
 </html>
