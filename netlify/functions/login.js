@@ -16,6 +16,21 @@ try {
       statusCode: 200,
       body: JSON.stringify({ success: true })
     };
+
+// This is in your frontend login.js, not the Netlify function
+fetch('/.netlify/functions/login', {
+  method: 'POST',
+  body: JSON.stringify({ password: passwordInput.value })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.success) {
+    sessionStorage.setItem('adminLoggedIn', 'true'); // ADD THIS LINE
+    window.location.href = '/admin.html'; // go to admin page
+  } else {
+    alert('Wrong password');
+  }
+});
   } else {
     return {
       statusCode: 401,
