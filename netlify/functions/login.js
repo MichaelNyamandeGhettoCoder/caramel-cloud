@@ -15,6 +15,10 @@ exports.handler = async (event) => {
       storedPass = '1234';
       await store.set('admin_password', storedPass);
     }
+console.log('Raw from Blobs:', JSON.stringify(storedPass));
+console.log('Comparing:', JSON.stringify(password), 'vs', JSON.stringify(storedPass));
+
+if (password === storedPass) {
 
     if (password === storedPass) {
       return {
