@@ -1,0 +1,7 @@
+name = "caramel-cloud"
+compatibility_date = "2026-06-13"
+pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "AUTH_KV"
+id = "we-will-fill-this-later"
